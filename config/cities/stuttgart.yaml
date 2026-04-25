@@ -1,0 +1,117 @@
+city: stuttgart
+center: { lat: 48.7758, lng: 9.1829 }
+
+neighborhoods:
+  - id: altstadt
+    name: Altstadt
+    # Rough rectangle around Schlossplatz / Marktplatz / Schillerplatz.
+    # Tighten to a real polygon when we have time.
+    polygon:
+      - { lat: 48.7795, lng: 9.1755 }
+      - { lat: 48.7795, lng: 9.1875 }
+      - { lat: 48.7720, lng: 9.1875 }
+      - { lat: 48.7720, lng: 9.1755 }
+
+merchants:
+  - id: m_cafe_mueller
+    name: Café Müller
+    category: cafe
+    location: { lat: 48.7762, lng: 9.1822 }
+    rules:
+      - id: rain_quiet_warmup
+        priority: 10
+        when:
+          - weather.condition: ["rain", "snow", "drizzle"]
+          - weather.tempC: { lt: 14 }
+          - demand.self: { lt: 0.6 }
+          - time.dayOfWeek: ["mon", "tue", "wed", "thu"]
+          - location.inZone: altstadt
+        max_discount_pct: 20
+        valid_minutes: 30
+        goal: "fill quiet hours"
+      - id: fresh_batch_drop
+        priority: 8
+        when:
+          - pulse.fresh_batch: true
+          - demand.self: { lt: 0.7 }
+          - location.inZone: altstadt
+        max_discount_pct: 15
+        valid_minutes: 20
+        goal: "move fresh inventory"
+
+  - id: m_baeckerei_schmidt
+    name: Bäckerei Schmidt
+    category: bakery
+    location: { lat: 48.7775, lng: 9.1810 }
+    rules:
+      - id: morning_pastry_push
+        priority: 7
+        when:
+          - time.hour: { gte: 7, lt: 10 }
+          - pulse.just_baked: true
+          - location.inZone: altstadt
+        max_discount_pct: 10
+        valid_minutes: 25
+        goal: "morning sell-through"
+      - id: end_of_shift_clearance
+        priority: 6
+        when:
+          - time.hour: { gte: 17, lt: 19 }
+          - pulse.end_of_shift: true
+        max_discount_pct: 30
+        valid_minutes: 45
+        goal: "clear day's bake"
+
+  - id: m_buchladen_wittwer
+    name: Buchladen Wittwer
+    category: bookshop
+    location: { lat: 48.7770, lng: 9.1795 }
+    rules:
+      - id: rainy_browse_invite
+        priority: 5
+        when:
+          - weather.condition: ["rain", "drizzle"]
+          - location.inZone: altstadt
+        max_discount_pct: 15
+        valid_minutes: 60
+        goal: "drive rainy footfall"
+
+  - id: m_weinbar_schiller
+    name: Weinbar Schiller
+    category: wine_bar
+    location: { lat: 48.7755, lng: 9.1830 }
+    rules:
+      - id: pre_show_evening
+        priority: 9
+        when:
+          - time.hour: { gte: 17, lt: 20 }
+          - event.within: { meters: 400, startsInMinutes: { lt: 90 } }
+          - location.inZone: altstadt
+        max_discount_pct: 20
+        valid_minutes: 45
+        goal: "capture pre-show crowd"
+
+  - id: m_eis_genuss
+    name: Eis & Genuss
+    category: gelato
+    location: { lat: 48.7780, lng: 9.1825 }
+    rules:
+      - id: warm_afternoon_treat
+        priority: 6
+        when:
+          - weather.condition: ["clear"]
+          - weather.tempC: { gte: 22 }
+          - time.hour: { gte: 13, lt: 18 }
+          - location.inZone: altstadt
+        max_discount_pct: 15
+        valid_minutes: 30
+        goal: "convert sunny strollers"
+
+# Static event seed used as a fallback when Ticketmaster is unavailable.
+# `lib/events/cache.ts` overwrites/augments this from the live API.
+events:
+  - id: e_stuttgart_open_air
+    name: Schloßplatz Open Air
+    location: { lat: 48.7783, lng: 9.1779 }
+    starts: 2026-04-25T18:00:00+02:00
+    ends: 2026-04-25T23:00:00+02:00
