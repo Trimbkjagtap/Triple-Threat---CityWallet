@@ -6,6 +6,7 @@ export const k = {
   geocode: (addressHash: string) => `geo:v1:${addressHash}`,
   staticMap: (centerHash: string, zoom: number) => `map:v1:${centerHash}:${zoom}`,
   payone: (merchantId: string, epochHour: number) => `pay:v1:${merchantId}:hour:${epochHour}`,
+  payoneOverride: (merchantId: string) => `pay:override:v1:${merchantId}`,
   pulse: (merchantId: string) => `pulse:v1:${merchantId}`,
   offer: (offerId: string) => `offer:v1:${offerId}`,
   token: (token: string) => `tok:v1:${token}`,
