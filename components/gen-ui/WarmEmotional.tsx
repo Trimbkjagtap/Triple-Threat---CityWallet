@@ -1,24 +1,35 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import type { Offer } from '@/lib/types/api';
 import { resolveImageSrc } from './registry';
 
 export function WarmEmotional({ offer }: { offer: Offer }) {
   const expiresAt = new Date(offer.expiresAt);
   const expiryStr = expiresAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <div className="rounded-2xl shadow-md overflow-hidden bg-stone-50 flex flex-col">
-      {/* Imagery */}
-      <div className="relative h-44 w-full bg-amber-100">
-        <Image
-          src={resolveImageSrc(offer.ui.imageryHint)}
-          alt={offer.merchantName}
-          fill
-          className="object-cover"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-        />
+      {/* Imagery — falls back to amber gradient if the file is missing */}
+      <div
+        className="relative h-44 w-full"
+        style={
+          imgFailed
+            ? { background: 'linear-gradient(135deg, #FCEBC8 0%, #E8B468 100%)' }
+            : { backgroundColor: '#FEF3C7' }
+        }
+      >
+        {!imgFailed && (
+          <Image
+            src={resolveImageSrc(offer.ui.imageryHint)}
+            alt={offer.merchantName}
+            fill
+            className="object-cover"
+            onError={() => setImgFailed(true)}
+          />
+        )}
       </div>
 
       <div className="p-4 flex flex-col gap-3">
@@ -43,7 +54,7 @@ export function WarmEmotional({ offer }: { offer: Offer }) {
         <p className="text-sm text-stone-500 leading-relaxed">{offer.subline}</p>
 
         {/* Discount */}
-        {offer.discount.value && (
+        {offer.discount.value !== undefined && (
           <p className="text-base font-semibold text-amber-700">
             {offer.discount.type === 'percent'
               ? `${offer.discount.value}% off`

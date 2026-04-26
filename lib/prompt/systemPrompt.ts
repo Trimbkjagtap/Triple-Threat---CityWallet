@@ -12,10 +12,10 @@ HARD RULES — never break these:
 - primaryColor: a hex color that fits the merchant's category and the register's mood.
 - expiresAt: compute from now + validMinutes given in the rule.
 
-REGISTER SELECTION — pick exactly one:
+REGISTER SELECTION — pick exactly one of three:
 
 warm_emotional
-  Use when: cold or wet weather, user is stationary or strolling slowly, comfort context (café, bakery, wine bar).
+  Use when: cold or wet weather, user is stationary or strolling slowly, comfort context (café, bakery, wine bar). Also use for evening / premium / calm contexts (use restrained warm browns and creams, treat it as the "quiet" variant).
   Tone: intimate, warm, unhurried. Feels like a friend's recommendation.
   Colors: warm browns, ambers, soft creams.
   Example headline: "Your cappuccino is waiting inside"
@@ -31,12 +31,6 @@ playful_energetic
   Tone: light, bright, fun. Short punchy words.
   Colors: bright gradient, sunny yellows, fresh greens.
   Example headline: "Fresh batch just landed"
-
-quiet_premium
-  Use when: evening, premium category (wine bar, bookshop, fine dining), user is calm.
-  Tone: minimal, refined, understated. No superlatives.
-  Colors: off-white, muted navy, dark slate.
-  Example headline: "An evening pour, just for you"
 
 CONTEXT CHIP GUIDE — map signals to signalKey:
 - weather condition or temperature → signalKey: "weather", icon: 🌧 / ☀️ / ❄️ / 🌫

@@ -1,11 +1,13 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import type { Offer } from '@/lib/types/api';
 import { resolveImageSrc } from './registry';
 
 export function PlayfulEnergetic({ offer }: { offer: Offer }) {
   const accent = offer.ui.accent ?? '#FBBF24';
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <div
@@ -16,15 +18,24 @@ export function PlayfulEnergetic({ offer }: { offer: Offer }) {
     >
       {/* Image + content side-by-side on md+, stacked on mobile */}
       <div className="flex flex-col sm:flex-row">
-        {/* Image column */}
-        <div className="relative h-40 sm:h-auto sm:w-2/5 bg-yellow-100 flex-shrink-0">
-          <Image
-            src={resolveImageSrc(offer.ui.imageryHint)}
-            alt={offer.merchantName}
-            fill
-            className="object-cover"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
+        {/* Image column — falls back to register gradient if missing */}
+        <div
+          className="relative h-40 sm:h-auto sm:w-2/5 flex-shrink-0"
+          style={
+            imgFailed
+              ? { background: `linear-gradient(135deg, ${offer.ui.primaryColor}, ${accent})` }
+              : { backgroundColor: '#FEF3C7' }
+          }
+        >
+          {!imgFailed && (
+            <Image
+              src={resolveImageSrc(offer.ui.imageryHint)}
+              alt={offer.merchantName}
+              fill
+              className="object-cover"
+              onError={() => setImgFailed(true)}
+            />
+          )}
         </div>
 
         {/* Content column */}
@@ -51,7 +62,7 @@ export function PlayfulEnergetic({ offer }: { offer: Offer }) {
           <p className="text-sm text-zinc-600">{offer.subline}</p>
 
           {/* Discount */}
-          {offer.discount.value && (
+          {offer.discount.value !== undefined && (
             <p className="text-sm font-bold" style={{ color: accent }}>
               {offer.discount.type === 'percent'
                 ? `${offer.discount.value}% off`

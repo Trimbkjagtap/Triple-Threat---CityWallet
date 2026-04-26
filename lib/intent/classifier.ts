@@ -1,3 +1,5 @@
+import type { IntentHint, BehavioralSignal } from '@/lib/types/api';
+
 /**
  * PRIVACY: This classifier runs entirely in the browser.
  * It produces a single intent label. Only that label crosses the wire to the server.
@@ -5,15 +7,28 @@
  * In production, this would be a quantized SLM (Phi-3 Mini, Gemma 2B) in the secure enclave.
  */
 
+const VALID_INTENTS: ReadonlySet<IntentHint> = new Set<IntentHint>([
+  'warm_drink_seeking',
+  'quick_lunch',
+  'window_shopping',
+  'commuting',
+  'unknown',
+]);
+
+function asIntentHint(v: string | null): IntentHint | null {
+  return v && VALID_INTENTS.has(v as IntentHint) ? (v as IntentHint) : null;
+}
+
 export function classifyIntent(params: {
   tempC: number;
   condition: string;
   hour: number;
-  behavioral: string;
-}): string {
-  // Demo override via localStorage (set by demo controls panel)
+  behavioral: BehavioralSignal;
+}): IntentHint {
+  // Demo override via localStorage (set by demo controls panel).
+  // Validate against the IntentHint enum so a typo'd override doesn't poison the wire.
   if (typeof window !== 'undefined') {
-    const forced = localStorage.getItem('forceIntent');
+    const forced = asIntentHint(localStorage.getItem('forceIntent'));
     if (forced) return forced;
   }
 

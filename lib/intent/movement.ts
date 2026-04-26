@@ -1,4 +1,17 @@
+import type { BehavioralSignal } from '@/lib/types/api';
+
 const WINDOW_MS = 5 * 60 * 1000; // 5-minute rolling window
+
+const VALID_SIGNALS: ReadonlySet<BehavioralSignal> = new Set<BehavioralSignal>([
+  'stationary',
+  'strolling',
+  'commuting',
+  'unknown',
+]);
+
+function asBehavioralSignal(v: string | null): BehavioralSignal | null {
+  return v && VALID_SIGNALS.has(v as BehavioralSignal) ? (v as BehavioralSignal) : null;
+}
 
 interface GeoPoint {
   lat: number;
@@ -29,7 +42,7 @@ function speedFromBuffer(buffer: GeoPoint[]): number {
   return windowSec > 0 ? totalDist / windowSec : 0;
 }
 
-function signalFromSpeed(mps: number): string {
+function signalFromSpeed(mps: number): BehavioralSignal {
   if (mps < 0.5) return 'stationary';
   if (mps < 1.8) return 'strolling';
   return 'commuting';
@@ -42,28 +55,29 @@ function signalFromSpeed(mps: number): string {
  *
  * Demo override: set localStorage key 'forceMovement' to one of:
  *   stationary | strolling | commuting | unknown
+ * Invalid values are ignored (falls through to real classification).
  */
 export function startMovementClassifier(
-  onUpdate: (signal: string) => void,
+  onUpdate: (signal: BehavioralSignal) => void,
 ): () => void {
   if (typeof navigator === 'undefined' || !navigator.geolocation) {
     onUpdate('unknown');
     return () => {};
   }
 
+  // Initial override emit (if set)
   if (typeof window !== 'undefined') {
-    const forced = localStorage.getItem('forceMovement');
-    if (forced) {
-      onUpdate(forced);
-    }
+    const forced = asBehavioralSignal(localStorage.getItem('forceMovement'));
+    if (forced) onUpdate(forced);
   }
 
   const buffer: GeoPoint[] = [];
 
   const watchId = navigator.geolocation.watchPosition(
     (pos) => {
+      // Re-check override on every update so the demo panel can flip live.
       if (typeof window !== 'undefined') {
-        const forced = localStorage.getItem('forceMovement');
+        const forced = asBehavioralSignal(localStorage.getItem('forceMovement'));
         if (forced) {
           onUpdate(forced);
           return;
