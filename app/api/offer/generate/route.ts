@@ -16,6 +16,7 @@ export async function POST(req: Request) {
 
   const result = streamObject({
     model: getModel(),
+    output: 'object',
     schema: OfferSchema,
     system: SYSTEM_PROMPT,
     messages: buildMessages(contextState, trigger, merchantRule),

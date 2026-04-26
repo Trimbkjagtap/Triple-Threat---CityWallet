@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 const hexColor = z.string().regex(/^#([0-9a-fA-F]{6})$/);
 
+const contextChipSchema = z.object({
+  icon: z.string(),
+  label: z.string(),
+  signalKey: z.enum(['weather', 'proximity', 'time', 'demand', 'event', 'pulse']),
+});
+
 export const OfferSchema = z.object({
   id: z.string(),
   merchantId: z.string(),
@@ -14,16 +20,7 @@ export const OfferSchema = z.object({
     description: z.string().optional(),
   }),
   expiresAt: z.string(),
-  contextChips: z
-    .array(
-      z.object({
-        icon: z.string(),
-        label: z.string(),
-        signalKey: z.enum(['weather', 'proximity', 'time', 'demand', 'event', 'pulse']),
-      }),
-    )
-    .min(2)
-    .max(4),
+  contextChips: z.array(contextChipSchema),
   ui: z.object({
     register: z.enum(['warm_emotional', 'factual_urgent', 'playful_energetic', 'quiet_premium']),
     primaryColor: hexColor,
