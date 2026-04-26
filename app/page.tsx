@@ -1,6 +1,7 @@
 import { HomescreenBanner } from "@/components/consumer/HomescreenBanner";
 import { LockScreen } from "@/components/consumer/LockScreen";
 import { PhoneFrame } from "@/components/consumer/PhoneFrame";
+import { PushNotification } from "@/components/consumer/PushNotification";
 import type { Offer } from "@/lib/types/api";
 
 const MOCK_OFFER: Offer = {
@@ -33,6 +34,10 @@ export default function Home() {
       </PhoneFrame>
       <PhoneFrame>
         <HomescreenBanner offer={MOCK_OFFER} />
+      </PhoneFrame>
+      <PhoneFrame>
+        <LockScreen />
+        <PushNotification offer={MOCK_OFFER} />
       </PhoneFrame>
     </main>
   );
