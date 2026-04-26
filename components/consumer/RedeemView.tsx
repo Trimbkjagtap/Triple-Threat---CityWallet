@@ -18,6 +18,7 @@ interface RedeemViewProps {
 }
 
 function formatCountdown(expiresAt: string, now: number): string {
+  if (!now) return "--:--";
   const ms = new Date(expiresAt).getTime() - now;
   if (ms <= 0) return "00:00";
   const totalSec = Math.floor(ms / 1000);
@@ -36,7 +37,8 @@ export function RedeemView({
 }: RedeemViewProps) {
   const [qrSrc, setQrSrc] = useState<string | null>(null);
   const [redeemed, setRedeemed] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
+  // Start at 0 so SSR and first client render match; real time is set on mount.
+  const [now, setNow] = useState(0);
   const onRedeemedRef = useRef(onRedeemed);
   onRedeemedRef.current = onRedeemed;
 
@@ -60,6 +62,7 @@ export function RedeemView({
 
   useEffect(() => {
     if (redeemed) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [redeemed]);
