@@ -3,15 +3,30 @@ import { OfferSchema } from '@/lib/prompt/schema';
 import { getModel } from '@/lib/prompt/model';
 import { SYSTEM_PROMPT } from '@/lib/prompt/systemPrompt';
 import { buildMessages } from '@/lib/prompt/buildMessages';
+import { loadCity } from '@/lib/config/loader';
 import type { OfferGenerateRequest } from '@/lib/types/api';
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({})) as Partial<OfferGenerateRequest>;
+  const body = (await req.json().catch(() => ({}))) as Partial<OfferGenerateRequest>;
 
   const { contextState, trigger, merchantRule } = body;
 
   if (!contextState || !trigger || !merchantRule) {
-    return Response.json({ error: 'missing contextState, trigger, or merchantRule' }, { status: 400 });
+    return Response.json(
+      { error: 'missing contextState, trigger, or merchantRule' },
+      { status: 400 },
+    );
+  }
+
+  // Look up merchant identity from city config so the model gets a concrete
+  // (id, name, category) instead of having to invent one.
+  const cfg = await loadCity(contextState.location.cityKey);
+  const merchant = cfg.merchants.find((m) => m.id === trigger.merchantId);
+  if (!merchant) {
+    return Response.json(
+      { error: `merchant ${trigger.merchantId} not found in ${contextState.location.cityKey}` },
+      { status: 400 },
+    );
   }
 
   const result = streamObject({
@@ -19,7 +34,11 @@ export async function POST(req: Request) {
     output: 'object',
     schema: OfferSchema,
     system: SYSTEM_PROMPT,
-    messages: buildMessages(contextState, trigger, merchantRule),
+    messages: buildMessages(contextState, trigger, merchantRule, {
+      id: merchant.id,
+      name: merchant.name,
+      category: merchant.category,
+    }),
     providerOptions: {
       anthropic: { cacheControl: { type: 'ephemeral' } },
     },

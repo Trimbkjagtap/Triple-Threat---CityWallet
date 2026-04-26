@@ -1,9 +1,16 @@
 import type { ContextState, Trigger, MerchantRule } from '@/lib/types/api';
 
+export type MerchantIdentity = {
+  id: string;
+  name: string;
+  category: string;
+};
+
 export function buildMessages(
   ctx: ContextState,
   trigger: Trigger,
   rule: MerchantRule,
+  merchant: MerchantIdentity,
 ): Array<{ role: 'user'; content: string }> {
   const time = new Date(ctx.time.iso);
   const hhmm = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
@@ -31,9 +38,16 @@ export function buildMessages(
     ? `${ctx.location.cityKey}, ${ctx.location.neighborhoodId}`
     : ctx.location.cityKey;
 
+  // Compute expiresAt server-side from now + validMinutes so the model
+  // gets a concrete ISO timestamp to copy into the offer (it can't be
+  // trusted to know the current date).
+  const nowIso = ctx.time.iso;
+  const expiresAtIso = new Date(time.getTime() + rule.validMinutes * 60_000).toISOString();
+
   const content = `Context:
+- Merchant: ${merchant.name} (id: ${merchant.id}, category: ${merchant.category})
 - Weather: ${ctx.weather.tempC}°C, ${ctx.weather.condition}, "${ctx.weather.summary}"
-- Time: ${ctx.time.dayOfWeek} ${ctx.time.period}, ${hhmm}
+- Time: ${ctx.time.dayOfWeek} ${ctx.time.period}, ${hhmm} (now: ${nowIso})
 - Location: ${locationStr}
 - Intent hint: ${ctx.intentHint}
 - Behavioral: ${ctx.behavioral}
@@ -45,6 +59,11 @@ Merchant rule fired: ${rule.id}
 - maxDiscountPct: ${rule.maxDiscountPct}
 - validMinutes: ${rule.validMinutes}
 - goal: ${rule.goal}
+
+Required output values:
+- merchantId: "${merchant.id}"
+- merchantName: "${merchant.name}"
+- expiresAt: "${expiresAtIso}"
 
 Generate the offer.`;
 
