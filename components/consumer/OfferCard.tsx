@@ -3,6 +3,7 @@
 import { Lock, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { GenUIPrimitive } from "@/components/gen-ui/registry";
 import type { IntentHint, Offer } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +56,7 @@ export function OfferCard({
       <ContextChips chips={offer.contextChips} className="mt-3" />
 
       <div className="mt-4 flex-1">
-        <GenUIPlaceholder offer={offer} />
+        <GenUIPrimitive register={offer.ui.register} offer={offer} />
       </div>
 
       <Button
@@ -72,19 +73,5 @@ export function OfferCard({
         <span>On device intent: {INTENT_LABELS[intentHint]}</span>
       </div>
     </div>
-  );
-}
-
-function GenUIPlaceholder({ offer }: { offer: Offer }) {
-  const summary = {
-    register: offer.ui.register,
-    headline: offer.headline,
-    subline: offer.subline,
-    imageryHint: offer.ui.imageryHint,
-  };
-  return (
-    <pre className="overflow-auto rounded-xl border border-dashed border-ios-divider bg-ios-muted/40 p-3 font-mono text-[10px] leading-snug text-foreground/70">
-      {JSON.stringify(summary, null, 2)}
-    </pre>
   );
 }
