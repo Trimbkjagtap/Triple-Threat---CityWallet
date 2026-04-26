@@ -4,7 +4,8 @@ import { getModel } from '@/lib/prompt/model';
 import { SYSTEM_PROMPT } from '@/lib/prompt/systemPrompt';
 import { buildMessages } from '@/lib/prompt/buildMessages';
 import { loadCity } from '@/lib/config/loader';
-import type { MerchantRule, OfferGenerateRequest } from '@/lib/types/api';
+import { persistOffer } from '@/lib/context/offerStore';
+import type { MerchantRule, Offer, OfferGenerateRequest } from '@/lib/types/api';
 
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as Partial<OfferGenerateRequest>;
@@ -59,6 +60,20 @@ export async function POST(req: Request) {
     }),
     providerOptions: {
       anthropic: { cacheControl: { type: 'ephemeral' } },
+    },
+    // Persist the offer to Redis once streaming completes. Without this,
+    // /api/redeem/token can't find the offer when the user taps "Use offer"
+    // — generateOffer would return success but the redeem chain breaks.
+    onFinish: async ({ object, error }) => {
+      if (error || !object) {
+        console.warn('[offer/generate] onFinish without object:', error);
+        return;
+      }
+      try {
+        await persistOffer(object as Offer);
+      } catch (err) {
+        console.error('[offer/generate] persistOffer failed:', err);
+      }
     },
   });
 

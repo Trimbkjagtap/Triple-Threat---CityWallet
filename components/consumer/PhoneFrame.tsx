@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { BatteryFull, Signal, Wifi } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -9,33 +12,38 @@ interface PhoneFrameProps {
   className?: string;
 }
 
-// Stuttgart Altstadt — close enough to read streets, far enough to feel like a neighborhood.
-const STUTTGART_CENTER = "48.7762,9.1822";
-const STUTTGART_ZOOM = 16;
-
-function buildStuttgartMapUrl(): string | null {
-  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  if (!key) return null;
-
-  const params = new URLSearchParams({
-    center: STUTTGART_CENTER,
-    zoom: String(STUTTGART_ZOOM),
-    size: "400x800",
-    scale: "2",
-    maptype: "roadmap",
-    key,
-  });
-
-  return `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`;
-}
-
 export function PhoneFrame({
   children,
   mapSlot,
   time = "9:41",
   className,
 }: PhoneFrameProps) {
-  const mapUrl = buildStuttgartMapUrl();
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchMapUrl() {
+      try {
+        const res = await fetch(
+          "/api/maps/static-url?cityKey=stuttgart&zoom=16&width=400&height=800",
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as { ok: boolean; url?: string };
+        if (!cancelled && data.ok && data.url) {
+          setMapUrl(data.url);
+        }
+      } catch {
+        // Swallow — gradient fallback already handles the null state.
+      }
+    }
+
+    fetchMapUrl();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div
