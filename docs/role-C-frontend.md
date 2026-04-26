@@ -33,7 +33,7 @@ cp .env.local.example .env.local
 
 Keys you need in `.env.local`: **none for local dev with mocks.** When integrating post-H10 you'll pull the same env file the others use.
 
-For the merchant dashboard's live feed (SSE), you'll need Redis credentials at integration time, but until then mock the event source.
+For the merchant dashboard's live feed, poll `/api/merchant/stats` every 2–3s — the `recentOffers` array in the response is the live feed. SSE was deferred (`/api/context/stream` is intentionally a 501 stub; the brief allows polling, see role doc note below).
 
 Smoke test you're ready: `pnpm dev` boots, you can navigate to `/` and `/merchant` (both will be empty until you build them).
 
@@ -163,7 +163,7 @@ In `app/(consumer)/page.tsx`, before mounting a push, check `localStorage` for a
 **`app/(merchant)/page.tsx`** — dashboard layout. Three regions:
 
 1. **`<StatsGrid>`** — top row of big numbers: `generated / accepted / dismissed / redeemed / acceptanceRate`. Polls `getMerchantStats` every 5s.
-2. **`<LiveFeed>`** — vertical feed of recent offers. Each row: timestamp, headline, status pill (pending/accepted/dismissed/expired/redeemed). Subscribes via `EventSource('/api/context/stream')` (or polls if SSE is post-integration).
+2. **`<LiveFeed>`** — vertical feed of recent offers. Each row: timestamp, headline, status pill (pending/accepted/dismissed/expired/redeemed). Reads from the `recentOffers` array returned by `getMerchantStats` — same poll interval as the stats grid (2–3s). No separate endpoint needed.
 3. **`<PulseButtons>`** — row of one-tap buttons: "Fresh batch", "Just baked", "Limited stock", "End of shift". Each POSTs to `postMerchantPulse({ merchantId, kind, label, ttlMinutes: 30 })`. Show a 30-min countdown on the active pulse so the merchant knows when it ends.
 4. (Below) `<TransactionsChart>` — a simple sparkline of `transactionsPerHour` over the last few hours, to show the "quiet hour" rule firing visibly. shadcn's chart primitives are fine.
 
@@ -212,7 +212,7 @@ This panel is your single most important hackathon insurance. Reshoots will be f
 | `POST /api/redeem/validate` | A | `ValidateResponse` |
 | `GET /api/merchant/stats` | A | `MerchantStats` |
 | `POST /api/merchant/pulse` | A | `{ ok: true }` |
-| `GET /api/context/stream` | A (SSE) | event stream of context updates |
+| ~~`GET /api/context/stream`~~ | A (deferred) | SSE skipped — poll `/api/merchant/stats` instead. Brief allows polling. |
 | `lib/intent/classifier.ts` | B | function returning intent label |
 | `lib/intent/movement.ts` | B | function returning movement label |
 | `components/gen-ui/registry.ts` | B | React component map |
@@ -228,7 +228,7 @@ Everything in `lib/api-client.ts` is mock-flagged via `NEXT_PUBLIC_MOCK`. Mark e
 - Rebase `feat/frontend` on main.
 - In `lib/api-client.ts`, swap `MOCK` → `false` for context, redemption, merchant stats, merchant pulse calls. Keep `MOCK=true` for offer generation (B not merged yet).
 - Sit with A for 10 min: confirm context chips populate from real Stuttgart weather + Ticketmaster events. Notice layout bugs that mocks hid (long event names, missing imagery, etc.).
-- Wire the `/api/context/stream` SSE in `<LiveFeed>` for the merchant dashboard.
+- Poll `/api/merchant/stats` every 2–3s in `<StatsGrid>` and `<LiveFeed>` (the `recentOffers` array is the feed). SSE was skipped — the brief explicitly allows aggregate-only updates.
 
 ### H14–H16 (after `feat/genui` merges)
 
@@ -250,7 +250,7 @@ Everything in `lib/api-client.ts` is mock-flagged via `NEXT_PUBLIC_MOCK`. Mark e
 - [ ] All 3 GenUI registers (B's) render distinctly when forced via demo controls.
 - [ ] Redeem flow: tap accept → QR mounts → countdown ticks → polled validate flips to green check.
 - [ ] Dismiss flow: swipe → toast → 24h `localStorage` suppression respected on next mount.
-- [ ] Merchant dashboard: stats poll, live feed (SSE or poll), pulse buttons work.
+- [ ] Merchant dashboard: stats poll, live feed (polled from `recentOffers`), pulse buttons work.
 - [ ] Rule editor renders all condition types from the YAML schema. Save can be a stub if needed.
 - [ ] Demo controls panel: force-trigger, behavioral override, channel preview, geofence override, force-quiet — all working.
 - [ ] Privacy chip ("On device intent: warm drink seeking") visible on the offer card.
