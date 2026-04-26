@@ -2,6 +2,7 @@ import type {
   ContextResponse,
   ContextStateRequest,
   MerchantPulsePost,
+  MerchantRule,
   MerchantStats,
   Offer,
   OfferAction,
@@ -154,7 +155,20 @@ export async function generateOffer(
   req: OfferGenerateRequest,
 ): Promise<Offer> {
   if (MOCK) return MOCK_OFFER;
-  return postJSON("/api/offer/generate", req);
+  // /api/offer/generate streams the JSON object as it's generated. Read the
+  // whole body as text then parse — gives us the final assembled offer.
+  // Progressive rendering via useObject is a polish item; this is correct
+  // for non-streaming consumers.
+  const res = await fetch("/api/offer/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    throw new Error(`/api/offer/generate failed: ${res.status}`);
+  }
+  const text = await res.text();
+  return JSON.parse(text) as Offer;
 }
 
 export async function postOfferAction(
@@ -206,4 +220,23 @@ export async function postMerchantPulse(
 ): Promise<OkResponse> {
   if (MOCK) return { ok: true };
   return postJSON("/api/merchant/pulse", req);
+}
+
+export async function getMerchantRules(
+  merchantId: string,
+): Promise<MerchantRule[]> {
+  if (MOCK) return [];
+  const resp = await getJSON<{
+    ok: true;
+    merchantId: string;
+    rules: MerchantRule[];
+  }>(`/api/merchant/rules?merchantId=${encodeURIComponent(merchantId)}`);
+  return resp.rules;
+}
+
+export async function postMerchantRule(
+  rule: MerchantRule,
+): Promise<{ ok: true; rule: MerchantRule }> {
+  if (MOCK) return { ok: true, rule };
+  return postJSON("/api/merchant/rules", rule);
 }
