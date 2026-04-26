@@ -5,20 +5,16 @@
  * In production, this would be a quantized SLM (Phi-3 Mini, Gemma 2B) in the secure enclave.
  */
 
-import type { IntentHint, BehavioralSignal, WeatherCondition } from '@/lib/types/api';
-
-export type { IntentHint };
-
 export function classifyIntent(params: {
   tempC: number;
-  condition: WeatherCondition | string;
+  condition: string;
   hour: number;
-  behavioral: BehavioralSignal;
-}): IntentHint {
+  behavioral: string;
+}): string {
   // Demo override via localStorage (set by demo controls panel)
   if (typeof window !== 'undefined') {
     const forced = localStorage.getItem('forceIntent');
-    if (forced) return forced as IntentHint;
+    if (forced) return forced;
   }
 
   const { tempC, condition, hour, behavioral } = params;

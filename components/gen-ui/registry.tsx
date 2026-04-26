@@ -1,3 +1,5 @@
+'use client';
+
 import type { Offer, ImageryHint } from '@/lib/types/api';
 import { WarmEmotional } from './WarmEmotional';
 import { FactualUrgent } from './FactualUrgent';

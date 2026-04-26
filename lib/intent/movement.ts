@@ -1,7 +1,3 @@
-import type { BehavioralSignal } from '@/lib/types/api';
-
-export type { BehavioralSignal };
-
 const WINDOW_MS = 5 * 60 * 1000; // 5-minute rolling window
 
 interface GeoPoint {
@@ -33,7 +29,7 @@ function speedFromBuffer(buffer: GeoPoint[]): number {
   return windowSec > 0 ? totalDist / windowSec : 0;
 }
 
-function signalFromSpeed(mps: number): BehavioralSignal {
+function signalFromSpeed(mps: number): string {
   if (mps < 0.5) return 'stationary';
   if (mps < 1.8) return 'strolling';
   return 'commuting';
@@ -41,26 +37,24 @@ function signalFromSpeed(mps: number): BehavioralSignal {
 
 /**
  * Starts a geolocation-based movement classifier.
- * Calls onUpdate with the current BehavioralSignal whenever location changes.
+ * Calls onUpdate with the current behavioral signal whenever location changes.
  * Returns a cleanup function to stop watching.
  *
  * Demo override: set localStorage key 'forceMovement' to one of:
  *   stationary | strolling | commuting | unknown
  */
 export function startMovementClassifier(
-  onUpdate: (signal: BehavioralSignal) => void,
+  onUpdate: (signal: string) => void,
 ): () => void {
   if (typeof navigator === 'undefined' || !navigator.geolocation) {
     onUpdate('unknown');
     return () => {};
   }
 
-  // Check demo override first
   if (typeof window !== 'undefined') {
     const forced = localStorage.getItem('forceMovement');
     if (forced) {
-      onUpdate(forced as BehavioralSignal);
-      // Still set up real watch so override can be removed at runtime
+      onUpdate(forced);
     }
   }
 
@@ -68,11 +62,10 @@ export function startMovementClassifier(
 
   const watchId = navigator.geolocation.watchPosition(
     (pos) => {
-      // Demo override takes priority
       if (typeof window !== 'undefined') {
         const forced = localStorage.getItem('forceMovement');
         if (forced) {
-          onUpdate(forced as BehavioralSignal);
+          onUpdate(forced);
           return;
         }
       }
@@ -80,14 +73,12 @@ export function startMovementClassifier(
       const now = Date.now();
       buffer.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, ts: now });
 
-      // Purge entries older than 5 minutes
       const cutoff = now - WINDOW_MS;
       while (buffer.length > 0 && buffer[0].ts < cutoff) {
         buffer.shift();
       }
 
-      const mps = speedFromBuffer(buffer);
-      onUpdate(signalFromSpeed(mps));
+      onUpdate(signalFromSpeed(speedFromBuffer(buffer)));
     },
     () => {
       onUpdate('unknown');
