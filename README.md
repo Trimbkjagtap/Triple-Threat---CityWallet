@@ -34,30 +34,30 @@ flowchart LR
     Merchant["🏪 Merchant<br/>app/merchant"]
 
     subgraph Vercel["Vercel Functions (Next.js 16)"]
-        ContextAPI[/api/context/state/]
-        OfferAPI[/api/offer/generate/]
-        RedeemAPI[/api/redeem/token<br/>/api/redeem/validate]
-        MerchantAPI[/api/merchant/stats<br/>/api/merchant/pulse<br/>/api/merchant/rules]
-        Maps[/api/maps/static-url/]
+        ContextAPI["/api/context/state"]
+        OfferAPI["/api/offer/generate"]
+        RedeemAPI["/api/redeem/token<br/>/api/redeem/validate"]
+        MerchantAPI["/api/merchant/stats<br/>/api/merchant/pulse<br/>/api/merchant/rules"]
+        Maps["/api/maps/static-url"]
     end
 
     subgraph Aggregator["lib/ — server"]
-        Agg[context/aggregator]
-        Triggers[triggers.ts<br/>YAML rule engine]
-        Geofence[maps/geofence<br/>point-in-polygon]
-        Cache[cache/redis<br/>SWR getOrFetch]
-        Prompt[prompt/<br/>schema + systemPrompt]
-        OfferStore[context/offerStore]
+        Agg["context/aggregator"]
+        Triggers["triggers.ts<br/>YAML rule engine"]
+        Geofence["maps/geofence<br/>point-in-polygon"]
+        Cache["cache/redis<br/>SWR getOrFetch"]
+        Prompt["prompt/<br/>schema + systemPrompt"]
+        OfferStore["context/offerStore"]
     end
 
     subgraph External["External APIs"]
-        OWM[OpenWeatherMap]
-        Ticketmaster[Ticketmaster<br/>Discovery API]
-        Anthropic[Anthropic<br/>Claude Sonnet 4.6]
-        GMaps[Google Maps<br/>Static Maps API]
+        OWM["OpenWeatherMap"]
+        Ticketmaster["Ticketmaster<br/>Discovery API"]
+        Anthropic["Anthropic<br/>Claude Sonnet 4.6"]
+        GMaps["Google Maps<br/>Static Maps API"]
     end
 
-    Upstash[(Upstash Redis<br/>cache · counters · pulses<br/>tokens · feed)]
+    Upstash[("Upstash Redis<br/>cache · counters · pulses<br/>tokens · feed")]
 
     Consumer -->|polls every 5s| ContextAPI
     Consumer -->|streams| OfferAPI
