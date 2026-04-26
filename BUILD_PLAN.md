@@ -16,7 +16,7 @@ Pick once, do not swap mid-build.
 |---|---|---|---|
 | **A** | Backend / Context lead | `feat/context` | `lib/cache/**`, `lib/context/**`, `lib/events/**`, `lib/maps/**`, `lib/config/**`, `app/api/context/**`, `app/api/redeem/**`, `app/api/merchant/{stats,pulse}/**`, `config/cities/stuttgart.yaml`, simulated Payone, fixtures |
 | **B** | AI / GenUI lead | `feat/genui` | `lib/prompt/**`, `lib/intent/**`, `app/api/offer/generate/**`, `components/gen-ui/**`, curated imagery in `public/img/imagery/` |
-| **C** | Frontend / UX lead (Vivek) | `feat/frontend` | `app/(consumer)/**`, `app/(merchant)/**`, `components/consumer/**`, `components/merchant/**`, Tailwind theme, demo controls panel, video reshoots |
+| **C** | Frontend / UX lead (Nidhi) | `feat/frontend` | `app/(consumer)/**`, `app/(merchant)/**`, `components/consumer/**`, `components/merchant/**`, Tailwind theme, demo controls panel, video reshoots |
 
 **Hard rule:** nobody writes outside their surface area without a heads-up in the team channel + a follow-up PR comment tagging the owner.
 
