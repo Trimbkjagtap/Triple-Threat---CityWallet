@@ -23,9 +23,12 @@ export const OfferSchema = z.object({
     description: z.string().optional(),
   }),
   expiresAt: z.string(),
-  // Brief: "≥2 visible context signals" — schema enforces 2..4 chips so the
-  // model can't drop the count and break the M1.4 deliverable.
-  contextChips: z.array(contextChipSchema).min(2).max(4),
+  // Brief: "≥2 visible context signals" — would prefer .min(2).max(4),
+  // but Anthropic's API rejects minItems > 1 when the Zod schema is
+  // translated to JSON schema for structured output. Enforcement lives
+  // in the system prompt ("pick exactly 2–4 chips") and is reliable in
+  // practice; if the model ever drops below 2, OfferCard handles it.
+  contextChips: z.array(contextChipSchema),
   ui: z.object({
     // quiet_premium intentionally NOT here: no UI primitive ships for it,
     // model picking it would silently fall back to warm_emotional.
