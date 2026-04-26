@@ -4,11 +4,13 @@ import type { Offer, ImageryHint } from '@/lib/types/api';
 import { WarmEmotional } from './WarmEmotional';
 import { FactualUrgent } from './FactualUrgent';
 import { PlayfulEnergetic } from './PlayfulEnergetic';
+import { QuietPremium } from './QuietPremium';
 
 export const registry = {
   warm_emotional: WarmEmotional,
   factual_urgent: FactualUrgent,
   playful_energetic: PlayfulEnergetic,
+  quiet_premium: QuietPremium,
 } as const;
 
 export type GenUIRegister = keyof typeof registry;

@@ -30,9 +30,7 @@ export const OfferSchema = z.object({
   // practice; if the model ever drops below 2, OfferCard handles it.
   contextChips: z.array(contextChipSchema),
   ui: z.object({
-    // quiet_premium intentionally NOT here: no UI primitive ships for it,
-    // model picking it would silently fall back to warm_emotional.
-    register: z.enum(['warm_emotional', 'factual_urgent', 'playful_energetic']),
+    register: z.enum(['warm_emotional', 'factual_urgent', 'playful_energetic', 'quiet_premium']),
     primaryColor: hexColor,
     accent: hexColor.optional(),
     imageryHint: z.enum([
