@@ -35,14 +35,13 @@ export function FactualUrgent({ offer }: { offer: Offer }) {
 
       <div className="p-4 flex flex-col gap-3">
         {/* Discount value — huge */}
-        {offer.discount.value && offer.discount.type === 'percent' && (
+        {offer.discount.value !== undefined && offer.discount.type === 'percent' ? (
           <div className="text-center">
             <span className="text-6xl font-black text-zinc-900">{offer.discount.value}</span>
             <span className="text-2xl font-bold text-zinc-600">%</span>
             <p className="text-xs text-zinc-400 uppercase tracking-widest mt-0.5">off</p>
           </div>
-        )}
-        {(!offer.discount.value || offer.discount.type !== 'percent') && (
+        ) : (
           <p className="text-center text-lg font-bold text-zinc-800">
             {offer.discount.description ?? offer.discount.type}
           </p>

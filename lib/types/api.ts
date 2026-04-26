@@ -32,7 +32,7 @@ export type PulseKind =
   | 'end_of_shift'
   | 'custom';
 
-export type Register = 'warm_emotional' | 'factual_urgent' | 'playful_energetic' | 'quiet_premium';
+export type Register = 'warm_emotional' | 'factual_urgent' | 'playful_energetic';
 
 export type ImageryHint =
   | 'steaming_cup'
