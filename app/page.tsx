@@ -1,5 +1,6 @@
 import { HomescreenBanner } from "@/components/consumer/HomescreenBanner";
 import { LockScreen } from "@/components/consumer/LockScreen";
+import { OfferCard } from "@/components/consumer/OfferCard";
 import { PhoneFrame } from "@/components/consumer/PhoneFrame";
 import { PushNotification } from "@/components/consumer/PushNotification";
 import type { Offer } from "@/lib/types/api";
@@ -38,6 +39,9 @@ export default function Home() {
       <PhoneFrame>
         <LockScreen />
         <PushNotification offer={MOCK_OFFER} />
+      </PhoneFrame>
+      <PhoneFrame>
+        <OfferCard offer={MOCK_OFFER} />
       </PhoneFrame>
     </main>
   );
