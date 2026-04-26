@@ -40,28 +40,37 @@ export async function POST(req: Request) {
     await forceQuiet(body.demoQuiet, 0.42, 600);
   }
 
-  const cfg = await loadCity(body.cityKey);
-  const state = await aggregate({
-    userId: body.userId,
-    lat: body.lat,
-    lng: body.lng,
-    cityKey: body.cityKey,
-    intentHint: body.intentHint ?? 'unknown',
-    behavioral: body.behavioral ?? 'unknown',
-  });
+  try {
+    const cfg = await loadCity(body.cityKey);
+    const state = await aggregate({
+      userId: body.userId,
+      lat: body.lat,
+      lng: body.lng,
+      cityKey: body.cityKey,
+      intentHint: body.intentHint ?? 'unknown',
+      behavioral: body.behavioral ?? 'unknown',
+    });
 
-  // Demo override — bypass evaluation, fire a specific rule by id.
-  if (demoOn && body.demoForceRule) {
-    const forced = forceTrigger(cfg, body.demoForceRule);
-    if (forced) {
-      const response: ContextResponse = { context: state, trigger: forced };
-      return NextResponse.json(response);
+    // Demo override — bypass evaluation, fire a specific rule by id.
+    if (demoOn && body.demoForceRule) {
+      const forced = forceTrigger(cfg, body.demoForceRule);
+      if (forced) {
+        const response: ContextResponse = { context: state, trigger: forced };
+        return NextResponse.json(response);
+      }
     }
-  }
 
-  const trigger = evaluateTriggers(state, cfg);
-  const response: ContextResponse = { context: state, trigger };
-  return NextResponse.json(response);
+    const trigger = evaluateTriggers(state, cfg);
+    const response: ContextResponse = { context: state, trigger };
+    return NextResponse.json(response);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[context/state] aggregate failed:', msg);
+    return NextResponse.json<ErrorResponse>(
+      { ok: false, error: `context_failed: ${msg}` },
+      { status: 500 },
+    );
+  }
 }
 
 function forceTrigger(

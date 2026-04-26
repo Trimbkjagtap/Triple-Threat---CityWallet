@@ -34,12 +34,21 @@ export async function POST(req: Request) {
     );
   }
 
-  await addPulse({
-    merchantId: body.merchantId,
-    kind: body.kind,
-    label: body.label,
-    ttlMinutes: body.ttlMinutes,
-  });
+  try {
+    await addPulse({
+      merchantId: body.merchantId,
+      kind: body.kind,
+      label: body.label,
+      ttlMinutes: body.ttlMinutes,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[pulse] addPulse failed:', msg);
+    return NextResponse.json<ErrorResponse>(
+      { ok: false, error: `pulse_failed: ${msg}` },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json<OkResponse>({ ok: true });
 }
