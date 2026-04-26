@@ -1,32 +1,30 @@
-// TODO(slot B): full Zod schema for Offer with field-level constraints.
-// See docs/role-B-genui.md H2–H3.
-// Must mirror the Offer type in lib/types/api.ts exactly.
-
 import { z } from 'zod';
+
+const hexColor = z.string().regex(/^#([0-9a-fA-F]{6})$/);
+
+const contextChipSchema = z.object({
+  icon: z.string(),
+  label: z.string(),
+  signalKey: z.enum(['weather', 'proximity', 'time', 'demand', 'event', 'pulse']),
+});
 
 export const OfferSchema = z.object({
   id: z.string(),
   merchantId: z.string(),
   merchantName: z.string(),
-  headline: z.string(),
-  subline: z.string(),
+  headline: z.string().max(60),
+  subline: z.string().max(110),
   discount: z.object({
     type: z.enum(['percent', 'fixed', 'bogo', 'free_addon']),
     value: z.number().optional(),
     description: z.string().optional(),
   }),
   expiresAt: z.string(),
-  contextChips: z.array(
-    z.object({
-      icon: z.string(),
-      label: z.string(),
-      signalKey: z.enum(['weather', 'proximity', 'time', 'demand', 'event', 'pulse']),
-    }),
-  ),
+  contextChips: z.array(contextChipSchema),
   ui: z.object({
     register: z.enum(['warm_emotional', 'factual_urgent', 'playful_energetic', 'quiet_premium']),
-    primaryColor: z.string(),
-    accent: z.string().optional(),
+    primaryColor: hexColor,
+    accent: hexColor.optional(),
     imageryHint: z.enum([
       'steaming_cup',
       'sunny_terrace',
@@ -38,7 +36,7 @@ export const OfferSchema = z.object({
       'bench_break',
     ]),
   }),
-  cta: z.string(),
+  cta: z.string().max(20),
   rationale: z.string(),
 });
 

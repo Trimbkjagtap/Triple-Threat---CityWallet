@@ -1,6 +1,3 @@
-// TODO(slot B): provider-agnostic getModel() reading LLM_PROVIDER from env.
-// See docs/role-B-genui.md H2–H3 for the real impl.
-
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 
