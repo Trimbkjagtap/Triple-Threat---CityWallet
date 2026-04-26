@@ -9,12 +9,34 @@ interface PhoneFrameProps {
   className?: string;
 }
 
+// Stuttgart Altstadt — close enough to read streets, far enough to feel like a neighborhood.
+const STUTTGART_CENTER = "48.7762,9.1822";
+const STUTTGART_ZOOM = 16;
+
+function buildStuttgartMapUrl(): string | null {
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  if (!key) return null;
+
+  const params = new URLSearchParams({
+    center: STUTTGART_CENTER,
+    zoom: String(STUTTGART_ZOOM),
+    size: "400x800",
+    scale: "2",
+    maptype: "roadmap",
+    key,
+  });
+
+  return `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`;
+}
+
 export function PhoneFrame({
   children,
   mapSlot,
   time = "9:41",
   className,
 }: PhoneFrameProps) {
+  const mapUrl = buildStuttgartMapUrl();
+
   return (
     <div
       className={cn(
@@ -25,7 +47,17 @@ export function PhoneFrame({
       <div className="relative h-full w-full overflow-hidden rounded-[44px] bg-ios-bg">
         <div className="absolute inset-0">
           {mapSlot ?? (
-            <div className="h-full w-full bg-gradient-to-b from-ios-muted to-ios-bg" />
+            mapUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={mapUrl}
+                alt=""
+                aria-hidden="true"
+                className="h-full w-full object-cover opacity-60 saturate-50 [filter:saturate(0.5)_brightness(1.05)]"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-b from-ios-muted to-ios-bg" />
+            )
           )}
         </div>
 
