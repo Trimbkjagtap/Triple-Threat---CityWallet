@@ -171,10 +171,24 @@ export async function postRedeemToken(
   return postJSON("/api/redeem/token", { offerId });
 }
 
+// Per-token first-seen timestamp so the mock validates after a short delay,
+// giving the demo time to show the QR + countdown before flipping to success.
+const MOCK_VALIDATE_DELAY_MS = 6000;
+const mockValidateFirstSeen = new Map<string, number>();
+
 export async function validateRedeemToken(
   token: string,
 ): Promise<ValidateResponse> {
-  if (MOCK) return MOCK_VALIDATE_RESPONSE;
+  if (MOCK) {
+    const seenAt = mockValidateFirstSeen.get(token) ?? Date.now();
+    if (!mockValidateFirstSeen.has(token)) {
+      mockValidateFirstSeen.set(token, seenAt);
+    }
+    if (Date.now() - seenAt < MOCK_VALIDATE_DELAY_MS) {
+      return { valid: false, reason: "Awaiting counter scan" };
+    }
+    return MOCK_VALIDATE_RESPONSE;
+  }
   return postJSON("/api/redeem/validate", { token });
 }
 
